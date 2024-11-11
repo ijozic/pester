@@ -27,7 +27,7 @@ const (
 	contentTypeFormURLEncoded = "application/x-www-form-urlencoded"
 )
 
-//ErrUnexpectedMethod occurs when an http.Client method is unable to be mapped from a calling method in the pester client
+// ErrUnexpectedMethod occurs when an http.Client method is unable to be mapped from a calling method in the pester client
 var ErrUnexpectedMethod = errors.New("unexpected client method, must be one of Do, Get, Head, Post, or PostFrom")
 
 // ErrReadingBody happens when we cannot read the body bytes
@@ -62,8 +62,9 @@ type Client struct {
 	wg *sync.WaitGroup
 
 	sync.Mutex
-	ErrLog         []ErrEntry
-	RetryOnHTTP429 bool
+	ErrLog           []ErrEntry
+	RetryOnHTTP429   bool
+	RetryOnHTTPCodes map[int]bool
 }
 
 // ErrEntry is used to provide the LogString() data and is populated
@@ -340,7 +341,7 @@ func (c *Client) pester(p params) (*http.Response, error) {
 				resp, err := httpClient.Do(req)
 				// Early return if we have a valid result
 				// Only retry (ie, continue the loop) on 5xx status codes and 429
-				if err == nil && resp.StatusCode < http.StatusInternalServerError && (resp.StatusCode != http.StatusTooManyRequests || (resp.StatusCode == http.StatusTooManyRequests && !c.RetryOnHTTP429)) {
+				if err == nil && resp.StatusCode < http.StatusInternalServerError && (resp.StatusCode != http.StatusTooManyRequests || (resp.StatusCode == http.StatusTooManyRequests && !c.RetryOnHTTP429) || !c.RetryOnHTTPCodes[resp.StatusCode]) {
 					multiplexCh <- result{resp: resp, err: err, req: n, retry: i}
 					return
 				}
