@@ -341,7 +341,7 @@ func (c *Client) pester(p params) (*http.Response, error) {
 				resp, err := httpClient.Do(req)
 				// Early return if we have a valid result
 				// Only retry (ie, continue the loop) on 5xx status codes and 429
-				if err == nil && resp.StatusCode < http.StatusInternalServerError && (resp.StatusCode != http.StatusTooManyRequests || (resp.StatusCode == http.StatusTooManyRequests && !c.RetryOnHTTP429) || !c.RetryOnHTTPCodes[resp.StatusCode]) {
+				if err == nil && resp.StatusCode < http.StatusInternalServerError && ((resp.StatusCode == http.StatusTooManyRequests && !c.RetryOnHTTP429) || !c.RetryOnHTTPCodes[resp.StatusCode]) {
 					multiplexCh <- result{resp: resp, err: err, req: n, retry: i}
 					return
 				}
