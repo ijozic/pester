@@ -346,6 +346,11 @@ func (c *Client) pester(p params) (*http.Response, error) {
 					return
 				}
 
+				// if there's no error, log response status code and message which caused a retry
+				if err == nil {
+					err = fmt.Errorf(resp.Status)
+				}
+
 				loggingContext := req.Context()
 				c.log(
 					loggingContext,
